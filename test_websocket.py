@@ -1,5 +1,7 @@
 import json
 import logging
+import uuid
+
 import pytz
 from flask_cors import cross_origin
 from flask import Flask, request, jsonify, make_response
@@ -26,7 +28,7 @@ IST = pytz.timezone('Asia/Kolkata')
 rooms = {}
 id_rooms = {}
 
-llm = Llama(model_path='openchat-3.5-0106.Q5_K_M.gguf',
+llm = Llama(model_path='../openchat-3.5-1210.Q5_K_M.gguf',
             n_gpu_layers=50,
             n_ctx=4096)
 
@@ -73,11 +75,14 @@ def handle_message(payload):
     print("message triggered", flush=True)
     query = payload["query"]
     sessionid = payload["sessionid"]
+    messageid = str(uuid.uuid4())
     prompt_ = f'''GPT4 Correct User: {query}<|end_of_turn|>GPT4 Correct Assistant:'''
-    for i in llm(prompt_, max_tokens=800, echo=True, temperature=0.0, stream=True):
+    for i in llm(prompt_, max_tokens=500, echo=True, temperature=0.0, stream=True):
         token = i['choices'][0]['text'].replace(prompt_, "")
-        res = {"text":token,
-               "sessionid": sessionid}
+
+        res = {"text": token,
+               "sessionid": sessionid,
+               "messageid": messageid}
         emit('messagefromserver', res, broadcast=True, include_self=True)
         eventlet.sleep()
 
@@ -91,20 +96,21 @@ def handle_disconnect():
 
 def retrievermid(sessionidobtained):
     return "8708213235"
+
+
 import time
+
 
 @app.route('/msg-to-flask', methods=['POST', 'GET'])
 def incoming_msg():
-
     req = request.get_json()
     print(req)
-    query = req['query']
+    query = req['text']
     sessionid = req['sessionid']
 
-    prompt_ = f'''GPT4 Correct User: {query}GPT4 Correct Assistant:'''
+    prompt_ = f'''GPT4 Correct User: {query}<|end_of_turn|>GPT4 Correct Assistant:'''
     res = {}
     for i in llm(prompt_, max_tokens=100, echo=True, temperature=0.0, stream=True):
-
         token = i['choices'][0]['text'].replace(prompt_, "")
 
         print(token)
@@ -120,9 +126,6 @@ def incoming_msg():
 
     # res = jsonify(res)
     # return res
-
-
-
 
 
 if __name__ == '__main__':
