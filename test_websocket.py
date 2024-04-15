@@ -28,7 +28,7 @@ IST = pytz.timezone('Asia/Kolkata')
 rooms = {}
 id_rooms = {}
 
-llm = Llama(model_path='../openchat-3.5-1210.Q5_K_M.gguf',
+llm = Llama(model_path='openchat-3.5-1210.Q5_K_M.gguf',
             n_gpu_layers=50,
             n_ctx=4096)
 
