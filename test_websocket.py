@@ -74,6 +74,7 @@ def handle_connect():
 def handle_message(payload):
     print("message triggered", flush=True)
     query = payload["query"]
+
     sessionid = payload["sessionid"]
     messageid = str(uuid.uuid4())
     prompt_ = f'''GPT4 Correct User: {query}<|end_of_turn|>GPT4 Correct Assistant:'''
@@ -82,8 +83,14 @@ def handle_message(payload):
 
         res = {"text": token,
                "sessionid": sessionid,
-               "messageid": messageid}
-        emit('messagefromserver', res, broadcast=True, include_self=True)
+               "messageid": messageid,
+               "query": query}
+
+        emit('messagefromserver',
+             res,
+             broadcast=True,
+             include_self=True)
+
         eventlet.sleep()
 
 
@@ -129,4 +136,4 @@ def incoming_msg():
 
 
 if __name__ == '__main__':
-    socketio.run(app, port=5000, debug=False)
+    socketio.run(app, port=3008, debug=False)
