@@ -72,6 +72,7 @@ def handle_connect():
 
 @socketio.on('messagefromclient')
 def handle_message(payload):
+    payload = payload.json()
     print("message triggered", flush=True)
     query = payload["query"]
 
